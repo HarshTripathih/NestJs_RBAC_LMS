@@ -1,17 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Course } from './schemas/course.schema';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { CourseRepositoryInterface } from 'src/core/domain/repositories/course.repository.interface';
 
 @Injectable()
 export class CourseService {
-  constructor(
-    @InjectModel(Course.name) private courseModel: Model<Course>,
-  ) {}
+  
+  constructor(private readonly courseRepo: CourseRepositoryInterface,) {}
 
   async create(createCourseDto: CreateCourseDto, instructorId: string) {
-    const course = await this.courseModel.create({
+    const course = await this.courseRepo.create({
       ...createCourseDto,
       instructor: instructorId,
     });
@@ -23,8 +20,7 @@ export class CourseService {
   }
 
   async findAll() {
-    return this.courseModel
-      .find()
-      .populate('instructor', 'fname lname email roles');
+    return this.courseRepo
+      .findAll()
   }
 }

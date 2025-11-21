@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CourseController } from './course.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { CourseSchema } from './schemas/course.schema';
 import { JwtAuthModule } from 'src/auth/jwt.module';
+import { DBModule } from 'src/infrastructure/database/db.module';
 
 @Module({
   imports:[
-    MongooseModule.forFeature([{
-      name:'Course', schema: CourseSchema
-    }]),
+    DBModule,
     JwtAuthModule
   ],
   controllers: [CourseController],

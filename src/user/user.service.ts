@@ -5,18 +5,15 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Error as MongooseError } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Error as MongooseError } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from 'src/auth/dto/register.dto';
+import { UserRepositoryInterface } from 'src/core/domain/repositories/user.repository.interface';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-  ) {}
+  
+  constructor(private readonly userRepo: UserRepositoryInterface){}
 
   /**
    * Create a new user with proper validation, hashing & error handling
@@ -26,7 +23,7 @@ export class UserService {
       const { fname, lname, email, password, roles } = registerDto;
 
       // 1. Check if email exists
-      const existing = await this.userModel.findOne({ email });
+      const existing = await this.userRepo.findByEmail( email );
       if (existing) {
         throw new ConflictException('User with this email already exists.');
       }
@@ -39,12 +36,12 @@ export class UserService {
       const role = roles && roles.length > 0 ? roles : ['student'];
 
       // 3. Create user
-      const newUser = await this.userModel.create({
+      const newUser = await this.userRepo.create({
         fname,
         lname,
         email,
         password: hashedPassword,
-        roles: role,
+        roles: roles?.length ? roles : ['student'],
       });
 
       return newUser;
@@ -72,7 +69,7 @@ export class UserService {
    */
   async findByEmail(email: string) {
     try {
-      const user = await this.userModel.findOne({ email }).lean();
+      const user = await this.userRepo.findByEmail( email );
       if (!user) throw new NotFoundException('User not found.');
       return user;
     } catch (error) {
@@ -86,7 +83,7 @@ export class UserService {
    */
   async findById(id: string) {
     try {
-      const user = await this.userModel.findById(id).lean();
+      const user = await this.userRepo.findById(id);
       if (!user) throw new NotFoundException('User not found.');
       return user;
     } catch (error) {

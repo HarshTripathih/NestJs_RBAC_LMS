@@ -5,7 +5,7 @@ import { Role } from 'src/constants/roles';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @Prop( { required: true } )
   fname: string;

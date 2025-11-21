@@ -21,7 +21,7 @@ async validateUser(loginDto: LoginDto) {
   if (!valid) return null;
 
   // Role check: If user selected a role → verify user's real roles include it
-  if (loginDto.role && !user.roles.includes(loginDto.role)) {
+  if (loginDto.role && !(user.roles ?? []).includes(loginDto.role)) {
     throw new UnauthorizedException(
       `You are not allowed to login as ${loginDto.role}`
     );
